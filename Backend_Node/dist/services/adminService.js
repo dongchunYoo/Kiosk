@@ -6,7 +6,7 @@ async function getStats() {
     try {
         const db = (0, kysely_setup_1.getKysely)();
         const usersRes = await db.selectFrom('users').select(db.fn.count('id').as('cnt')).execute();
-        const licensesRes = await db.selectFrom('licenses').select(db.fn.count('id').as('cnt')).execute();
+        const licensesRes = await db.selectFrom('license').select(db.fn.count('id').as('cnt')).execute();
         const storesRes = await db.selectFrom('stores').select(db.fn.count('id').as('cnt')).execute();
         const paymentsRes = await db.selectFrom('PaymentReceipt').select(db.fn.count('id').as('cnt')).execute();
         const usersCount = Number((usersRes && usersRes[0] && usersRes[0].cnt) || 0);

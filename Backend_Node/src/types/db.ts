@@ -150,7 +150,7 @@ export type DbTypes = {
   products: ProductsRow;
   categories: CategoriesRow;
   stores: StoresRow;
-  licenses: LicenseRow;
+  license: LicenseRow;
   PaymentReceipt: PaymentReceiptRow;
   PaymentProducts: PaymentProductsRow;
   product_options: ProductOptionsRow;

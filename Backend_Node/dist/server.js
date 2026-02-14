@@ -38,6 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createServer = createServer;
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const products_1 = __importDefault(require("./routes/products"));
@@ -53,6 +54,15 @@ const users_1 = __importDefault(require("./routes/users"));
 const db_1 = require("./config/db");
 async function createServer() {
     const app = (0, express_1.default)();
+    // CORS 설정 (프로덕션 환경에서는 특정 도메인만 허용)
+    const corsOptions = {
+        origin: process.env.DEV_MODE === 'true'
+            ? '*' // 개발 환경: 모든 도메인 허용
+            : ['https://kioskfront.ydc1981.pe.kr', 'https://ydc1981.pe.kr'], // 프로덕션: 특정 도메인만
+        credentials: true,
+        optionsSuccessStatus: 200
+    };
+    app.use((0, cors_1.default)(corsOptions));
     app.use(body_parser_1.default.json());
     // init DB pool
     await (0, db_1.initDb)();
@@ -93,6 +103,18 @@ async function createServer() {
         }
     }
     app.use('/api/appdata', appdata_1.default);
+    // backward-compatible aliases for legacy clients (no /api prefix)
+    app.use('/appdata', appdata_1.default);
+    app.use('/auth', auth_1.default);
+    app.use('/licenses', licenses_1.default);
+    app.use('/stores', stores_1.default);
+    app.use('/store-groups', store_groups_1.default);
+    app.use('/product-options', product_options_1.default);
+    app.use('/products', products_1.default);
+    app.use('/categories', categories_1.default);
+    app.use('/payments', payments_1.default);
+    app.use('/admin', admin_1.default);
+    app.use('/users', users_1.default);
     app.use('/api/licenses', licenses_1.default);
     app.use('/api/stores', stores_1.default);
     app.use('/api/store-groups', store_groups_1.default);

@@ -9,15 +9,41 @@ exports.getStoreById = getStoreById;
 exports.getStoreImagePath = getStoreImagePath;
 const kysely_setup_1 = require("../config/kysely-setup");
 const dbHelpers_1 = require("../utils/dbHelpers");
+const redis_1 = require("../config/redis");
+const logger_1 = require("../utils/logger");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const memory = [];
 let nextId = 1;
 async function listStores() {
+    const redis = (0, redis_1.getRedisClient)();
+    const cacheKey = 'stores:all';
+    if (redis) {
+        try {
+            const cached = await redis.get(cacheKey);
+            if (cached) {
+                (0, logger_1.logDebug)('[Stores] Cache hit for all stores');
+                return JSON.parse(cached);
+            }
+        }
+        catch (redisErr) {
+            (0, logger_1.logError)('[Stores] Redis get error', redisErr);
+        }
+    }
     try {
         const db = (0, kysely_setup_1.getKysely)();
         const rows = await db.selectFrom('stores').select(['id', 'name']).limit(100).execute();
-        return (Array.isArray(rows) ? rows : []);
+        const result = (Array.isArray(rows) ? rows : []);
+        if (redis) {
+            try {
+                await redis.setex(cacheKey, 300, JSON.stringify(result));
+                (0, logger_1.logDebug)('[Stores] Cache set for all stores');
+            }
+            catch (redisErr) {
+                (0, logger_1.logError)('[Stores] Redis set error', redisErr);
+            }
+        }
+        return result;
     }
     catch (err) {
         return memory.slice();
@@ -37,12 +63,36 @@ async function createStore(name, imagePath) {
     }
 }
 async function getStoreById(id) {
+    const redis = (0, redis_1.getRedisClient)();
+    const cacheKey = `stores:id:${id}`;
+    if (redis) {
+        try {
+            const cached = await redis.get(cacheKey);
+            if (cached) {
+                (0, logger_1.logDebug)(`[Stores] Cache hit for store ${id}`);
+                return JSON.parse(cached);
+            }
+        }
+        catch (redisErr) {
+            (0, logger_1.logError)('[Stores] Redis get error', redisErr);
+        }
+    }
     try {
         const db = (0, kysely_setup_1.getKysely)();
         const row = await db.selectFrom('stores').selectAll().where('id', '=', Number(id)).executeTakeFirst();
         if (!row)
             return null;
-        return row;
+        const result = row;
+        if (redis) {
+            try {
+                await redis.setex(cacheKey, 300, JSON.stringify(result));
+                (0, logger_1.logDebug)(`[Stores] Cache set for store ${id}`);
+            }
+            catch (redisErr) {
+                (0, logger_1.logError)('[Stores] Redis set error', redisErr);
+            }
+        }
+        return result;
     }
     catch (err) {
         const found = memory.find(s => String(s.id) === String(id));

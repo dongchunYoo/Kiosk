@@ -3,15 +3,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.clearInMemoryProducts = exports.deleteProduct = exports.updateProduct = exports.createProduct = exports.getProducts = void 0;
 const kysely_setup_1 = require("../config/kysely-setup");
 const dbHelpers_1 = require("../utils/dbHelpers");
+const redis_1 = require("../config/redis");
+const logger_1 = require("../utils/logger");
 let inMemoryProducts = [];
 const getProducts = async (storeId) => {
+    const redis = (0, redis_1.getRedisClient)();
+    const cacheKey = storeId ? `products:store:${storeId}` : 'products:all';
+    if (redis) {
+        try {
+            const cached = await redis.get(cacheKey);
+            if (cached) {
+                (0, logger_1.logDebug)(`[Products] Cache hit for ${cacheKey}`);
+                return JSON.parse(cached);
+            }
+        }
+        catch (redisErr) {
+            (0, logger_1.logError)('[Products] Redis get error', redisErr);
+        }
+    }
     try {
         const db = (0, kysely_setup_1.getKysely)();
+        let rows;
         if (storeId) {
-            const rows = await db.selectFrom('products').selectAll().where('store_id', '=', Number(storeId)).limit(100).execute();
-            return rows;
+            rows = await db.selectFrom('products').selectAll().where('store_id', '=', Number(storeId)).limit(100).execute();
         }
-        const rows = await db.selectFrom('products').selectAll().limit(100).execute();
+        else {
+            rows = await db.selectFrom('products').selectAll().limit(100).execute();
+        }
+        if (redis) {
+            try {
+                await redis.setex(cacheKey, 300, JSON.stringify(rows));
+                (0, logger_1.logDebug)(`[Products] Cache set for ${cacheKey}`);
+            }
+            catch (redisErr) {
+                (0, logger_1.logError)('[Products] Redis set error', redisErr);
+            }
+        }
         return rows;
     }
     catch (err) {

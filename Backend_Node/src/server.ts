@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
@@ -15,6 +16,17 @@ import { initDb } from './config/db';
 
 export async function createServer() {
   const app = express();
+  
+  // CORS 설정 (프로덕션 환경에서는 특정 도메인만 허용)
+  const corsOptions = {
+    origin: process.env.DEV_MODE === 'true' 
+      ? '*' // 개발 환경: 모든 도메인 허용
+      : ['https://kioskfront.ydc1981.pe.kr', 'https://ydc1981.pe.kr'], // 프로덕션: 특정 도메인만
+    credentials: true,
+    optionsSuccessStatus: 200
+  };
+  app.use(cors(corsOptions));
+  
   app.use(bodyParser.json());
 
   // init DB pool

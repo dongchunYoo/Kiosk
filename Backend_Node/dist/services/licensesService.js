@@ -13,7 +13,7 @@ async function listLicenses(_opts) {
     try {
         const db = (0, kysely_setup_1.getKysely)();
         // Allow optional filtering by store_id if provided
-        const q = db.selectFrom('licenses').select(['id', 'license_key', 'expiry_dt', 'device_id', 'uuid', 'store_id', 'active', 'meta']).limit(100);
+        const q = db.selectFrom('license').select(['id', 'license_key', 'expiry_dt', 'device_id', 'uuid', 'store_id', 'active', 'meta']).limit(100);
         if (_opts && _opts.store_id) {
             q.where('store_id', '=', Number(_opts.store_id));
         }
@@ -31,7 +31,7 @@ async function listLicenses(_opts) {
 async function createLicense(license_key, meta) {
     try {
         const db = (0, kysely_setup_1.getKysely)();
-        const res = await db.insertInto('licenses').values({ license_key }).execute();
+        const res = await db.insertInto('license').values({ license_key }).execute();
         const insertId = (0, dbHelpers_1.extractInsertId)(res) || nextId++;
         return { id: insertId, license_key };
     }
@@ -44,7 +44,7 @@ async function createLicense(license_key, meta) {
 async function findByKey(key) {
     try {
         const db = (0, kysely_setup_1.getKysely)();
-        const rows = await db.selectFrom('licenses').select(['id', 'license_key']).where('license_key', '=', key).limit(1).execute();
+        const rows = await db.selectFrom('license').select(['id', 'license_key']).where('license_key', '=', key).limit(1).execute();
         if (rows && rows.length)
             return { id: Number(rows[0].id) || nextId++, license_key: rows[0].license_key };
         return null;
