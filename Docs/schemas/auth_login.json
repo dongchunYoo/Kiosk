@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auth Login Request",
+  "type": "object",
+  "required": ["userId", "password"],
+  "properties": {
+    "userId": { "type": "string", "example": "alice" },
+    "password": { "type": "string", "example": "s3cr3t" }
+  },
+  "additionalProperties": false
+}

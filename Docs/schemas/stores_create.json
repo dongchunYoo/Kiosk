@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Store Create Request",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": { "type": "string" },
+    "address": { "type": "string" },
+    "phone": { "type": "string" },
+    "pg_merchant_id": { "type": "string" },
+    "biz_no": { "type": "string" }
+  },
+  "additionalProperties": true
+}

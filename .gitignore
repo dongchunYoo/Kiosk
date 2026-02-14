@@ -1,0 +1,39 @@
+# Ignore local environment files
+.env
+.run-env
+backend-node/.env
+backend-node/frontend/.env
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Flutter / Dart
+**/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Android gradle downloads or large bundles accidentally added
+app-flutter/android/gradle/Downloads/
+
+# Logs
+*.log
+backend-node/logs/
+
+# Backups
+backups/
+
+# Temporary files
+*.tmp
+*.swp
+

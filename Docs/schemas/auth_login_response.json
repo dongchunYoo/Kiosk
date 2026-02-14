@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auth Login Response",
+  "type": "object",
+  "required": ["token","user"],
+  "properties": {
+    "token": { "type": "string", "description": "JWT token" },
+    "user": {
+      "type": "object",
+      "description": "User object with sensitive fields removed",
+      "properties": {
+        "id": { "type": ["string","number"] },
+        "user_Id": { "type": "string" },
+        "role": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

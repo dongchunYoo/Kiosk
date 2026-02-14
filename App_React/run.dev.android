@@ -1,0 +1,92 @@
+
+
+set -e
+cd "$(dirname "$0")"
+
+echo "[RAZOR] Ensuring dependencies are installed..."
+if [ ! -d node_modules ] || [ package.json -nt node_modules ] || [ package-lock.json -nt node_modules ]; then
+	npm install
+fi
+
+# Android SDK 경로 설정
+if [ -z "$ANDROID_HOME" ]; then
+	if [ -d "$HOME/Library/Android/sdk" ]; then
+		export ANDROID_HOME="$HOME/Library/Android/sdk"
+	elif [ -d "$HOME/Android/Sdk" ]; then
+		export ANDROID_HOME="$HOME/Android/Sdk"
+	fi
+fi
+
+if [ -n "$ANDROID_HOME" ]; then
+	export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
+fi
+
+# Android 에뮬레이터 자동 시작
+echo "[RAZOR] Checking Android emulators..."
+AVDS=$(emulator -list-avds 2>/dev/null | head -1)
+
+if [ -n "$AVDS" ]; then
+	# 실행 중인 에뮬레이터 확인
+	RUNNING=$(adb devices 2>/dev/null | grep -w "emulator" | wc -l)
+	
+	if [ "$RUNNING" -eq 0 ]; then
+		echo "[RAZOR] Starting emulator: $AVDS"
+		nohup emulator -avd "$AVDS" > /dev/null 2>&1 &
+		echo "[RAZOR] Waiting for emulator to boot..."
+		adb wait-for-device
+		sleep 3
+		echo "[RAZOR] Emulator ready"
+	else
+		echo "[RAZOR] Emulator already running"
+	fi
+	
+	# Metro bundler 포트 포워딩 설정
+	echo "[RAZOR] Setting up port forwarding..."
+	adb reverse tcp:8081 tcp:8081
+else
+	echo "[RAZOR] No emulators found. Please create one with Android Studio."
+	echo "[RAZOR] Opening Android Studio Device Manager..."
+	open -a "Android Studio" || true
+fi
+
+export NODE_ENV=development
+
+# Backend .env.dev 파일 경로 (App_React에서 상대 경로)
+BACKEND_ENV_FILE="$(cd "$(dirname "$0")/.." && pwd)/Backend_Node/.env.dev"
+
+restore_env() {
+	# 종료 시 원본 복원
+	if [ -f "${BACKEND_ENV_FILE}.bak" ]; then
+		echo "[RAZOR] Restoring original Backend .env.dev"
+		mv -f "${BACKEND_ENV_FILE}.bak" "${BACKEND_ENV_FILE}" || true
+	fi
+}
+
+trap restore_env EXIT
+
+# 에뮬레이터가 사용 중이면 Backend IP를 10.0.2.2 로 치환 (에뮬레이터 -> 호스트 머신 매핑)
+if [ -n "$AVDS" ]; then
+	echo "[RAZOR] Detected emulator environment — adjusting Backend .env.dev for emulator"
+	if [ -f "$BACKEND_ENV_FILE" ]; then
+		cp "$BACKEND_ENV_FILE" "${BACKEND_ENV_FILE}.bak"
+		# replace BACKEND_IP and IMAGE_BASE_URL host with 10.0.2.2 while keeping ports/paths
+		sed -E -e 's#^(BACKEND_IP)=.*#\1=http://10.0.2.2:3005#' \
+			   -e 's#^(IMAGE_BASE_URL)=.*#\1=http://10.0.2.2:3005/image/#' \
+			"$BACKEND_ENV_FILE" > "${BACKEND_ENV_FILE}.tmp" && mv "${BACKEND_ENV_FILE}.tmp" "$BACKEND_ENV_FILE"
+		echo "[RAZOR] Backend .env.dev patched for emulator (10.0.2.2)"
+	else
+		echo "[RAZOR] Backend .env.dev not found at $BACKEND_ENV_FILE; skipping patch"
+	fi
+else
+	echo "[RAZOR] No emulator detected — using existing Backend .env.dev settings (assumed real device)"
+fi
+
+echo "[RAZOR] Starting Expo dev server in dev-client mode (Google Maps enabled, Fast Refresh active)..."
+
+# Dev client 모드: 이미 빌드/설치된 네이티브 dev-client를 사용해 Google Maps 등 네이티브 모듈을 유지하면서
+# Fast Refresh를 사용합니다. 필요 시 한 번은 `npx expo run:android --variant devClient`로 dev-client를 빌드/설치하세요.
+npx expo start --dev-client --android --localhost
+
+# export NODE_ENV=development
+# export DEV_GALLERY=true
+# npm run dev:android

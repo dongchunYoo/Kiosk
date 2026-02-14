@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auth Register Request",
+  "type": "object",
+  "required": ["userId","password"],
+  "properties": {
+    "userId": { "type": "string" },
+    "password": { "type": "string" },
+    "name": { "type": "string" },
+    "phone": { "type": "string" },
+    "grade": { "type": "string" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "License Update Request",
+  "type": "object",
+  "required": ["id","expiry_dt","enable"],
+  "properties": {
+    "id": { "type": ["string","number"] },
+    "expiry_dt": { "type": "string", "format": "date-time" },
+    "enable": { "type": "boolean" },
+    "uuid": { "type": "string" },
+    "device_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

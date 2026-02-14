@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Create Payment Receipt",
+  "type": "object",
+  "required": ["device_id", "storeId", "total_amount"],
+  "properties": {
+    "device_id": { "type": "string" },
+    "storeId": { "type": "integer" },
+    "total_amount": { "type": "number" },
+    "currency": { "type": "string", "default": "KRW" },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["productId", "price", "quantity"],
+        "properties": {
+          "productId": { "type": "integer" },
+          "price": { "type": "number" },
+          "quantity": { "type": "integer" }
+        }
+      }
+    },
+    "meta": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": true
+}

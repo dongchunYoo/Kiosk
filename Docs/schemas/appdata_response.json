@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AppData Response",
+  "type": "object",
+  "properties": {
+    "id": { "type": ["number","string"] },
+    "name": { "type": "string" },
+    "biz_no": { "type": "string" },
+    "store": { "type": "object" },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": ["number","string"] },
+          "name": { "type": "string" },
+          "products": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          }
+        },
+        "required": ["id","name"],
+        "additionalProperties": true
+      }
+    },
+    "device_id": { "type": ["string","null"] }
+  },
+  "required": ["categories"],
+  "additionalProperties": true
+}

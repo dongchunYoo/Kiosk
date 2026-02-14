@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "License Add Request",
+  "type": "object",
+  "required": ["store_id","license_key","expiry_dt"],
+  "properties": {
+    "store_id": { "type": "string" },
+    "license_key": { "type": "string" },
+    "expiry_dt": { "type": "string", "format": "date-time" },
+    "device_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}
