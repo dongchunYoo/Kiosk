@@ -22,9 +22,9 @@ export const createCategory = async (req: Request, res: Response) => {
 };
 
 export const updateCategory = async (req: Request, res: Response) => {
-  const id = req.params.id || req.body.id;
+  const id = req.params.id ?? req.body.id;
   const patch = req.body || {};
-  if (!id) return res.status(400).json({ ok: false, error: 'missing_id' });
+  if (id === undefined || id === null) return res.status(400).json({ ok: false, error: 'missing_id' });
   try {
     const updated = await categoriesService.updateCategory(id, patch);
     res.json({ ok: true, data: updated });
@@ -34,8 +34,8 @@ export const updateCategory = async (req: Request, res: Response) => {
 };
 
 export const deleteCategory = async (req: Request, res: Response) => {
-  const id = req.params.id || req.body.id;
-  if (!id) return res.status(400).json({ ok: false, error: 'missing_id' });
+  const id = req.params.id ?? req.body.id;
+  if (id === undefined || id === null) return res.status(400).json({ ok: false, error: 'missing_id' });
   try {
     const ok = await categoriesService.deleteCategory(id);
     res.json({ ok: true, data: ok });

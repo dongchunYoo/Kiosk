@@ -59,9 +59,9 @@ const createCategory = async (req, res) => {
 };
 exports.createCategory = createCategory;
 const updateCategory = async (req, res) => {
-    const id = req.params.id || req.body.id;
+    const id = req.params.id ?? req.body.id;
     const patch = req.body || {};
-    if (!id)
+    if (id === undefined || id === null)
         return res.status(400).json({ ok: false, error: 'missing_id' });
     try {
         const updated = await categoriesService.updateCategory(id, patch);
@@ -73,8 +73,8 @@ const updateCategory = async (req, res) => {
 };
 exports.updateCategory = updateCategory;
 const deleteCategory = async (req, res) => {
-    const id = req.params.id || req.body.id;
-    if (!id)
+    const id = req.params.id ?? req.body.id;
+    if (id === undefined || id === null)
         return res.status(400).json({ ok: false, error: 'missing_id' });
     try {
         const ok = await categoriesService.deleteCategory(id);

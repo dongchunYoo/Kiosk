@@ -4,11 +4,11 @@ import {
   Text, 
   ScrollView, 
   TouchableOpacity, 
-  Image,
   FlatList,
   Modal,
   Alert,
 } from 'react-native';
+import { CachedImage } from '../components/CachedImage';
 import { formatPrice, normalizeImageUrl, formatTime } from '../utils/format';
 import { IDLE_TIMEOUT } from '../config/constants';
 import { logDebug } from '../utils/logger';
@@ -253,14 +253,17 @@ const MainScreen: React.FC<MainScreenProps> = ({ storeData }) => {
               {Array.isArray(filteredProducts) && filteredProducts.map((product) => (
                 <TouchableOpacity
                   key={product.id}
-                  className="m-2 w-[30%] overflow-hidden rounded-lg bg-white shadow"
+                  className="m-2 w-[22%] overflow-hidden rounded-lg bg-white shadow"
                   onPress={() => handleProductPress(product)}
                 >
                   {product.image_url && (
-                    <Image
-                      source={{ uri: normalizeImageUrl(product.image_url) || undefined }}
-                      className="h-32 w-full bg-gray-200"
+                    <CachedImage
+                      source={product.image_url}
+                      className="w-full bg-gray-200"
+                      style={{ aspectRatio: 1 }}
                       resizeMode="cover"
+                      showLoader={true}
+                      fallbackText="이미지 없음"
                     />
                   )}
                   <View className="p-3">
